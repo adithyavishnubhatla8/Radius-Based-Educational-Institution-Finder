@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<!-- CO1: Internet Fundamentals, HTML Structure, Meta Tags, Web Document Setup -->
+<meta charset="UTF-8">
+
+<!-- CO5: SEO Friendly Page Title -->
+<title>Radius Based Educational Institution Finder</title>
+
+<!-- CO1: Responsive Web Design using viewport -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- CO5: API / Library Integration (Leaflet Map Library) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+/* Footer Styling */
+.footer{
+  background: linear-gradient(90deg,#1a237e,#3949ab);
+  color:white;
+  text-align:center;
+  padding:15px;
+  font-size:14px;
+  margin-top:10px;
+  box-shadow:0 -2px 8px rgba(0,0,0,0.2);
+}
+
+.footer p{
+  margin:5px;
+}
+/* CO1: CSS Syntax, Typography, Color Representation */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #eef1f6;
+}
+
+/* CO2: Semantic Layout Styling using CSS */
+header {
+  background: linear-gradient(90deg, #1a237e, #3949ab);
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+
+/* CO2: CSS Layout using Flexbox */
+.controls {
+  background: white;
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* CO2: Form Styling and Input Design */
+input, select, button {
+  padding: 10px;
+  font-size: 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* CO2: Button Styling + UI Interactivity */
+button {
+  background: #1a237e;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0d155a;
+}
+
+/* CO4: Dynamic status display using DOM */
+#status {
+  text-align: center;
+  padding: 8px;
+  font-weight: bold;
+}
+
+/* CO2: Responsive Layout with Flexbox */
+.main {
+  display: flex;
+  height: calc(100vh - 190px);
+}
+
+#map {
+  flex: 2;
+}
+
+#list {
+  flex: 1;
+  background: white;
+  overflow-y: auto;
+  padding: 10px;
+  border-left: 2px solid #ddd;
+}
+
+/* CO2: UI Component Styling */
+.card {
+  background: #f9f9f9;
+  border-left: 5px solid #1a237e;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
+
+.card h4 {
+  margin: 0 0 5px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- CO2: Semantic HTML Elements -->
+<header>
+  <h2>Radius-Based Educational Institution Finder</h2>
+  <p>Educational Institutions Across India</p>
+</header>
+
+<!-- CO2: HTML Forms and Input Handling -->
+<div class="controls">
+
+  <!-- CO2: Input Field -->
+  <input id="area" placeholder="Enter Area / City (e.g. Bachupally)">
+
+  <!-- CO2: Select Dropdown -->
+  <select id="type">
+    <option value="all">All Institutions</option>
+    <option value="school">Schools</option>
+    <option value="college">Colleges</option>
+    <option value="engineering">Engineering Colleges</option>
+    <option value="university">Universities / IIT / IIM / PG</option>
+  </select>
+
+  <!-- CO2: Radius Selection -->
+  <select id="radius">
+    <option value="2000">2 km</option>
+    <option value="5000">5 km</option>
+    <option value="10000">10 km</option>
+    <option value="20000">20 km</option>
+  </select>
+
+  <!-- CO4: Event Handling using onclick -->
+  <button onclick="searchInstitutions()">Search</button>
+
+</div>
+
+<!-- CO4: DOM Manipulation Area -->
+<div id="status"></div>
+
+<div class="main">
+
+  <!-- CO5: Interactive Map Display -->
+  <div id="map"></div>
+
+  <!-- CO4: Dynamic Result Rendering -->
+  <div id="list">
+    <h3>Nearby Institutions</h3>
+    <div id="results"></div>
+  </div>
+
+</div>
+
+<!-- CO5: External JavaScript Library -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+/* CO3: JavaScript Variables and Object Initialization */
+let map = L.map('map').setView([20.5937, 78.9629], 5);
+
+/* CO5: API Integration with OpenStreetMap */
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+/* CO3: Array Data Structure */
+let markers = [];
+
+/* CO4: DOM Manipulation and Event Handling */
+function clearAll() {
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+  document.getElementById("results").innerHTML = "";
+}
+
+/* CO3: Functions, Async Programming, Promises */
+async function searchInstitutions() {
+
+  /* CO4: DOM Input Handling */
+  const area = document.getElementById("area").value.trim();
+  const radius = document.getElementById("radius").value;
+  const type = document.getElementById("type").value;
+
+  /* CO3: Conditional Statements */
+  if (!area) {
+    alert("Please enter an area");
+    return;
+  }
+
+  clearAll();
+
+  /* CO4: Dynamic Content Update */
+  document.getElementById("status").innerText = "Searching institutions...";
+
+  /* CO5: API Call using Fetch */
+  const geoRes = await fetch(
+    `https://nominatim.openstreetmap.org/search?format=json&q=${area}`
+  );
+
+  /* CO3: JSON Data Handling */
+  const geoData = await geoRes.json();
+
+  if (geoData.length === 0) {
+    document.getElementById("status").innerText = "Area not found.";
+    return;
+  }
+
+  const lat = geoData[0].lat;
+  const lon = geoData[0].lon;
+
+  /* CO5: Map Interaction */
+  map.setView([lat, lon], 13);
+
+  /* CO5: Marker Creation */
+  const areaMarker = L.marker([lat, lon])
+    .addTo(map)
+    .bindPopup(`<b>${area}</b>`)
+    .openPopup();
+
+  markers.push(areaMarker);
+
+  /* CO3: String Construction and Dynamic Query Building */
+  let filters = "";
+
+  /* CO3: Conditional Logic */
+  if (type === "school" || type === "all") {
+    filters += `
+      node["amenity"="school"](around:${radius},${lat},${lon});
+      way["amenity"="school"](around:${radius},${lat},${lon});
+      relation["amenity"="school"](around:${radius},${lat},${lon});
+    `;
+  }
+
+  if (type === "college" || type === "all") {
+    filters += `
+      node["amenity"="college"](around:${radius},${lat},${lon});
+      way["amenity"="college"](around:${radius},${lat},${lon});
+      relation["amenity"="college"](around:${radius},${lat},${lon});
+    `;
+  }
+
+  if (type === "engineering") {
+    filters += `
+      node["amenity"="college"](around:${radius},${lat},${lon});
+      way["amenity"="college"](around:${radius},${lat},${lon});
+      relation["amenity"="college"](around:${radius},${lat},${lon});
+      node["amenity"="university"](around:${radius},${lat},${lon});
+      way["amenity"="university"](around:${radius},${lat},${lon});
+      relation["amenity"="university"](around:${radius},${lat},${lon});
+    `;
+  }
+
+  if (type === "university" || type === "all") {
+    filters += `
+      node["amenity"="university"](around:${radius},${lat},${lon});
+      way["amenity"="university"](around:${radius},${lat},${lon});
+      relation["amenity"="university"](around:${radius},${lat},${lon});
+    `;
+  }
+
+  /* CO5: API Query Construction */
+  const query = `
+    [out:json];
+    (${filters});
+    out center;
+  `;
+
+  /* CO5: Fetch Data from Overpass API */
+  const overpassRes = await fetch(
+    "https://overpass-api.de/api/interpreter",
+    {
+      method: "POST",
+      body: query
+    }
+  );
+
+  const data = await overpassRes.json();
+
+  /* CO3: Conditional Handling */
+  if (data.elements.length === 0) {
+    document.getElementById("status").innerText =
+      "No institutions found.";
+    return;
+  }
+
+  /* CO3: Loops and Array Iteration */
+  data.elements.forEach((place, index) => {
+
+    const latlng = place.lat
+      ? [place.lat, place.lon]
+      : [place.center.lat, place.center.lon];
+
+    const name = place.tags.name || "Educational Institution";
+    const amenity = place.tags.amenity;
+
+    /* CO5: Dynamic Map Marker */
+    const marker = L.marker(latlng)
+      .addTo(map)
+      .bindPopup(`<b>${name}</b><br>Type: ${amenity}`);
+
+    markers.push(marker);
+
+    /* CO4: Dynamic HTML Rendering */
+    document.getElementById("results").innerHTML += `
+      <div class="card">
+        <h4>${index + 1}. ${name}</h4>
+        <p>Type: ${amenity}</p>
+      </div>
+    `;
+  });
+
+  document.getElementById("status").innerText =
+    `Found ${data.elements.length} institutions near ${area}`;
+}
+
+</script>
+<!-- Footer -->
+<footer class="footer">
+  <p>© 2026 Radius Based Educational Institution Finder</p>
+  <p><b>Developed by:</b> Adithya Vishnubhatla</p>
+</footer>
+</body>
+</html>

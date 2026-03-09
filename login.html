@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Radius Based Educational Institution Finder - Login</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+margin:0;
+font-family:Arial, sans-serif;
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(135deg,#1a237e,#3949ab);
+animation:fadeIn 1.2s ease;
+}
+
+@keyframes fadeIn{
+from{opacity:0; transform:translateY(20px);}
+to{opacity:1; transform:translateY(0);}
+}
+
+.container{
+background:white;
+padding:40px;
+width:340px;
+border-radius:12px;
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+text-align:center;
+animation:slideUp 0.8s ease;
+}
+
+@keyframes slideUp{
+from{transform:translateY(40px); opacity:0;}
+to{transform:translateY(0); opacity:1;}
+}
+
+h1{
+font-size:20px;
+color:#1a237e;
+margin-bottom:5px;
+}
+
+.subtitle{
+font-size:13px;
+color:#777;
+margin-bottom:25px;
+}
+
+input{
+width:90%;
+padding:11px;
+margin:8px 0;
+border:1px solid #ccc;
+border-radius:6px;
+font-size:14px;
+transition:0.3s;
+}
+
+input:focus{
+border-color:#3949ab;
+outline:none;
+box-shadow:0 0 5px rgba(57,73,171,0.5);
+}
+
+button{
+width:95%;
+padding:11px;
+margin-top:10px;
+background:#1a237e;
+border:none;
+color:white;
+font-size:15px;
+border-radius:6px;
+cursor:pointer;
+transition:0.3s;
+}
+
+button:hover{
+background:#0d155a;
+transform:scale(1.03);
+}
+
+.link{
+margin-top:12px;
+font-size:14px;
+color:#1a237e;
+cursor:pointer;
+}
+
+.link:hover{
+text-decoration:underline;
+}
+
+.passwordBox{
+position:relative;
+}
+
+.showPass{
+position:absolute;
+right:20px;
+top:15px;
+font-size:12px;
+cursor:pointer;
+color:#555;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container" id="loginBox">
+
+<h1>Radius Based Educational Institution Finder</h1>
+<p class="subtitle">Login to search nearby colleges & schools</p>
+
+<input type="text" id="loginUser" placeholder="Username">
+
+<div class="passwordBox">
+<input type="password" id="loginPass" placeholder="Password">
+<span class="showPass" onclick="togglePass()">Show</span>
+</div>
+
+<button onclick="login()">Login</button>
+
+<p class="link" onclick="showSignup()">Create New Account</p>
+
+</div>
+
+
+<div class="container" id="signupBox" style="display:none">
+
+<h1>Create Account</h1>
+<p class="subtitle">Signup to use Institution Finder</p>
+
+<input type="text" id="signupUser" placeholder="Username">
+
+<div class="passwordBox">
+<input type="password" id="signupPass" placeholder="Password">
+<span class="showPass" onclick="toggleSignupPass()">Show</span>
+</div>
+
+<button onclick="signup()">Signup</button>
+
+<p class="link" onclick="showLogin()">Back to Login</p>
+
+</div>
+
+<script>
+
+function showSignup(){
+document.getElementById("loginBox").style.display="none";
+document.getElementById("signupBox").style.display="block";
+}
+
+function showLogin(){
+document.getElementById("signupBox").style.display="none";
+document.getElementById("loginBox").style.display="block";
+}
+
+function signup(){
+
+let user=document.getElementById("signupUser").value;
+let pass=document.getElementById("signupPass").value;
+
+if(user=="" || pass==""){
+alert("Please fill all fields");
+return;
+}
+
+localStorage.setItem("username",user);
+localStorage.setItem("password",pass);
+
+alert("Signup Successful!");
+
+showLogin();
+}
+
+function login(){
+
+let user=document.getElementById("loginUser").value;
+let pass=document.getElementById("loginPass").value;
+
+let savedUser=localStorage.getItem("username");
+let savedPass=localStorage.getItem("password");
+
+if(user===savedUser && pass===savedPass){
+
+window.location="main.html";
+
+}else{
+
+alert("Invalid Login");
+
+}
+
+}
+
+function togglePass(){
+
+let p=document.getElementById("loginPass");
+
+if(p.type==="password"){
+p.type="text";
+}else{
+p.type="password";
+}
+
+}
+
+function toggleSignupPass(){
+
+let p=document.getElementById("signupPass");
+
+if(p.type==="password"){
+p.type="text";
+}else{
+p.type="password";
+}
+
+}
+
+</script>
+
+</body>
+</html>
